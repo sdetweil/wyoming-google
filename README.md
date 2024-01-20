@@ -21,9 +21,9 @@ script/setup
 ## create the Google api Credentials file
 open the [Cloud Cloud Console](https://console.cloud.google.com/welcome)
 
-you must create a billing account, for charging any usage overages. 
-select the billing topic from the hamburger menu  next to **Google Cloud**
-see https://cloud.google.com/speech-to-text/pricing for current plans and pricing
+you must create a billing account, for charging any usage overages. <br>
+select the billing topic from the hamburger menu  next to **Google Cloud**<br>
+see https://cloud.google.com/speech-to-text/pricing for current plans and pricing<br>
 
 click the Projects dropdown, and dialog will open, with **New Project**  in the top right to create a new project, or select an existing project from the list 
 
@@ -43,25 +43,25 @@ click **Create credentials** and select **Service Account** (this gives you back
 enter a name of the service account that means something to you.
 click Done
 
-click the name of the service account you just created
+click the name of the service account you just created<br>
 click the keys tab
 click add key
 click json
 
 ## loaded into the /config folder as credentials.json
-this will open the save as dialog to allow you to download and save the json file locally
+this will open the save as dialog to allow you to download and save the json file locally<br>
 the name needs to be **credentials.json** and placed in this project **config** folder
 
 ##note: <br>
-you cannot download the same credentials  file again.
+you cannot download the same credentials  file again.<br>
 you can create a NEW key and get a NEW file, only. 
 
 ## test run the speech to text using the microphon on this machine
-execute the command
+execute the command<br>
 test/run_mic2google.sh
 
-this will take microphone audio info and process it for text, and print out the text
-this confirms that the api is enabled, the billing account is setup and the service account 
+this will take microphone audio info and process it for text, and print out the text of the spoken words<br>
+this confirms that the api is enabled, the billing account is setup and the service account <br>
 credentials file is in the right place for these tests. 
 
 
