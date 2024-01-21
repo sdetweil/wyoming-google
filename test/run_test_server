@@ -1,6 +1,6 @@
 #!/bin/bash 
 python3 -m venv .venv
 source .venv/bin/activate
-script/run --language en --uri 'tcp://0.0.0.0:10555' --config ./config  --debug 
+script/run  --uri 'tcp://0.0.0.0:10555' --config ./config  --debug 
 #--intermediate_results
 

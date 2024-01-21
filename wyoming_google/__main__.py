@@ -20,8 +20,8 @@ async def main() -> None:
     parser.add_argument(
         "--language",
         help="Default language to set for transcription",
-    )
-    parser.add_argument("--config", required=True, help="config folder name") 
+    )    
+    parser.add_argument("--config", help="config folder name", default="/config") 
     parser.add_argument("--intermediate_results", action="store_true",  help="if you want results on the fly") 
     parser.add_argument("--debug", action="store_true", help="Log DEBUG messages")
     args = parser.parse_args()
@@ -51,6 +51,7 @@ async def main() -> None:
                     url="https://github.com/sdetweil/google-streaming-asr",
                 ),
                 installed=True,
+                version="1.0.0",
                 models=[
                     AsrModel(
                         name="google-streaming",
@@ -59,6 +60,7 @@ async def main() -> None:
                             name="rhasspy",
                             url="https://github.com/rhasspy/models/",
                         ),
+                        version="1.0.0",
                         installed=True,
                         languages=GOOGLE_LANGUAGES,
                     )

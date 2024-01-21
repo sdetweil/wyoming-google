@@ -1,0 +1,16 @@
+#!/bin/bash
+
+script_dir=$(dirname $(readlink -f $0))
+
+if  [ $script_dir != $(pwd) ]; then 
+	cd  $script_dir
+fi 
+cd ..
+cp run.sh $script_dir
+docker build -t rhasspy/wyoming-google:1.0.0 --platform linux/amd64 -f dockerbuild/Dockerfile .
+
+docker build -t rhasspy/wyoming-google:1.0.0 --platform linux/armv7 -f dockerbuild/Dockerfile .
+
+docker build -t rhasspy/wyoming-google:1.0.0 --platform linux/arm64 -f dockerbuild/Dockerfile .
+
+rm $script_dir/run.sh
