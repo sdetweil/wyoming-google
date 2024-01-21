@@ -63,7 +63,7 @@ docker run -it -p 10555:10555 -v /path_to_credentials_folder:/config rhasspy/wyo
 [Source] (tbd)
 
 ## create the Google api Credentials file
-open the [Cloud Cloud Console](https://console.cloud.google.com/welcome)
+open the [Cloud Console](https://console.cloud.google.com/welcome)
 ![main page](./images/mainpage.png)
 
 you must create a billing account, for charging any usage overages. <br>
