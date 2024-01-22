@@ -53,11 +53,24 @@ this is a test this is a test sometimes this is a test
 
 
 ## Docker Image
-# todo
-# not yet (jan 19, 2024)
+to create a local docker image for testing do
+```
+dockerbuild/makeit
+```
+this will build 3 images<br>
+* AMD64 <br>
+* for ARM64/aarch64 <br>
+* for arm32 (arm7)<br>
+
+to run the docker image for this platform, do 
+
 ``` sh
-docker run -it -p 10555:10555 -v /path_to_credentials_folder:/config rhasspy/wyoming-google \
-     --language en 
+docker run -it -p 10555:10555 -v /path_to_credentials_folder:/config rhasspy/wyoming-google 
+```
+
+or 
+```
+make -F dockerbuild/Makefile  run
 ```
 
 [Source] (tbd)
@@ -81,32 +94,52 @@ Select the billing account you created above
 ![main page](./images/project-selected.png)
 
 
-[Enable the Cloud Speech API.]
+[Enable the Cloud Speech API.]<br>
 push the **Apis and Services** button 
 ![main page](./images/push-apis.png)
 apis landing page
 ![main page](./images/apis-landing.png)
-then enter speech in the search box
+then enter **speech** in the search box<br>
+click search
 
 ENABLE THE API - For more info see **Cloud Speech API Pricing** (for normal usage it will be free)
+![main page](./images/enable-speech-api.png)
+click **ENABLE**
+![main page](./images/after-api-enable.png)
 
 Create a new service account, 
+click **IAM and Services** in the hamburger menu next to Google CLoud<br>
+click **Service Accounts**<br>
+![main page](./images/create-service-account.png)
+click **Create service accounnt**
+enter a service account name that will be memorable for you <br>
+and description if you want<br>
+click **DONE**
+
 select the Credentials link in the **APIs and services** menu entry (from the hamburger menu  next to **Google Cloud**)
+![main page](./images/listing-credentials-page.png)
 
-click **Create credentials** and select **Service Account** (this gives you background callable usage of the enabled apis) 
 
-enter a name of the service account that means something to you.
-click Done
-
+click **CREATE CREDENTIALS** and select **Service Account** (this gives you background callable usage of the enabled apis) 
 click the name of the service account you just created<br>
-click the keys tab
-click add key
-click json
+![main page](./images/view-service-account.png)
 
-## loaded into the /config folder as credentials.json
+
+
+click the **KEYS** tab
+![main page](./images/view-service-account.png)
+click **add key**
+
+![main page](./images/select-json-keyfile.png)
+click **JSON**
+
+click **CREATE** <br>
 this will open the save as dialog to allow you to download and save the json file locally<br>
-the name needs to be **credentials.json** and placed in this project **config** folder
 
-##note: <br>
-you cannot download the same credentials  file again.<br>
+place the generated file into the **wyoming-google/config** folder as **credentials.json**
+
+the name **MUST** to be **credentials.json** 
+
+## note: <br>
+you cannot download the same credentials file again.<br>
 you can create a NEW key and get a NEW file, only. 
