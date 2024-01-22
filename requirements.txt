@@ -1,4 +1,4 @@
-wyoming==1.5.0
+wyoming==1.5.2
 ctranslate2>=3.17,<4
 tokenizers==0.13.*
 google.cloud.speech==2.23
