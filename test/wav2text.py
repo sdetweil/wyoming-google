@@ -24,7 +24,6 @@ CHUNK_SIZE = int(RATE / 10)  # 100ms
 # connect to the server asr port and return the connection object
 #@staticmethod
 async def connect(uri:str) -> AsyncTcpClient:
-    print("server uri="+uri);
     tcp = AsyncTcpClient.from_uri(uri)
     await tcp.connect()
     return tcp
