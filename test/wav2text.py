@@ -22,8 +22,9 @@ RATE = 16000
 CHUNK_SIZE = int(RATE / 10)  # 100ms
 
 # connect to the server asr port and return the connection object
-@staticmethod
-async def connect(uri) -> AsyncTcpClient:
+#@staticmethod
+async def connect(uri:str) -> AsyncTcpClient:
+    print("server uri="+uri);
     tcp = AsyncTcpClient.from_uri(uri)
     await tcp.connect()
     return tcp
@@ -62,15 +63,20 @@ async def main() -> None:
     if args.partial:
        InterimResults: bool =args.partial
 
-  
+    if debug == True:
+       _LOGGER.debug("server uri="+args.server)  
        
     # loop thru the wav files (may be one, space separated)
     for wave_file in args.wav_file:
         if debug:
             _LOGGER.debug("wave file="+wave_file)               
-        # connect to the asr server
-        asr_server_connection=await connect(args.server)               
-        
+        asr_server_connection=None
+        try:
+ 	    # connect to the asr server
+            asr_server_connection=await connect(args.server)               
+        except:
+            print("unable to connect to asr at "+args.server)
+            return
         # use each wav file in turn
         input_wav_file =  wave.open(wave_file, "r")
         if debug:
