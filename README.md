@@ -59,8 +59,8 @@ dockerbuild/makeit
 ```
 this will build 3 images<br>
 * AMD64 <br>
-* for ARM64/aarch64 <br>
-* for arm32 (arm7)<br>
+* ARM64/aarch64 <br>
+* arm32 (arm7l)<br>
 
 to run the docker image for this platform, do 
 
@@ -73,9 +73,11 @@ or
 make -F dockerbuild/Makefile  run
 ```
 
-[Source] (tbd)
+[Source]
+this Wyoming extension is hosted at 
+https://github/com/sdetweil/wyoming-goole
 
-## create the Google api Credentials file
+## creating the Google api Credentials file
 open the [Cloud Console](https://console.cloud.google.com/welcome)
 ![main page](./images/mainpage.png)
 
