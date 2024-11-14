@@ -22,7 +22,7 @@ script/setup
 See the section further down in this readme
 
 
-## test run the speech to text using the microphon on this machine
+## test run the speech to text using the microphone on this machine
 execute the command<br>
 ```sh
 test/run_mic2google.sh
