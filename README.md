@@ -140,7 +140,7 @@ this will open the save as dialog to allow you to download and save the json fil
 
 place the generated file into the **wyoming-google/config** folder as **credentials.json**
 
-the name **MUST** to be **credentials.json** 
+the name **MUST** be **credentials.json** 
 
 ## note: <br>
 you cannot download the same credentials file again.<br>
