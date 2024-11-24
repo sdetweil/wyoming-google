@@ -19,6 +19,7 @@ async def main() -> None:
     parser.add_argument("--uri", required=True, help="unix:// or tcp://")
     parser.add_argument(
         "--language",
+        default="auto",
         help="Default language to set for transcription",
     )    
     parser.add_argument("--config", help="config folder name", default="/config") 
@@ -48,7 +49,7 @@ async def main() -> None:
                 description="google cloud streaming asr",
                 attribution=Attribution(
                     name="Sam Detweiler",
-                    url="https://github.com/sdetweil/google-streaming-asr",
+                    url="https://github.com/sdetweil/wyominggoogle",
                 ),
                 installed=True,
                 version="1.0.0",

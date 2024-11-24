@@ -72,7 +72,7 @@ class GoogleEventHandler(AsyncEventHandler):
 
         Args:
             responses: List of server responses
-            patial   : whether partial results should be returned
+            partial   : whether partial results should be returned
             debug    : whether debug messages should be produced
 
         Returns:
@@ -146,9 +146,11 @@ class GoogleEventHandler(AsyncEventHandler):
         self.responseQueue.put_nowait(event)            
 
     async def handle_event(self, event: Event) -> bool:
-        #_LOGGER.debug("event type='"+event.type+"'\n")
+        _LOGGER.debug("event type='"+event.type+"'\n")
 
         if AudioChunk.is_type(event.type):
+            if self.speechclient == None:
+                await self.handle_event(Transcribe().event())
             _LOGGER.debug("received AudioChunk event request")
             chunk = AudioChunk.from_event(event)
             _LOGGER.debug("chunk info rate="+str(chunk.rate)+" width="+str(chunk.width)+" channels="+str(chunk.channels))
@@ -208,6 +210,7 @@ class GoogleEventHandler(AsyncEventHandler):
             _LOGGER.debug("received AudioStop event request")
             if self.speechclient==None:
                 _LOGGER.debug("speech vars=null=True")
+                #self.speechclient=speech.SpeechClient()
             else:
                 _LOGGER.debug("speech vars=null=False")
 

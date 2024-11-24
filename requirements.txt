@@ -1,2 +1,2 @@
-wyoming==1.5.2
+wyoming==1.6.0
 google.cloud.speech==2.23
