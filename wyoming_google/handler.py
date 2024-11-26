@@ -8,8 +8,8 @@ from queue import Queue
 from threading import Thread
 
 from google.cloud import speech
-from wyoming.asr import Transcribe
-from .xasr import xTranscript
+#from wyoming.asr import Transcribe
+from .xasr import xTranscript, xTranscribe
 from wyoming.audio import AudioChunk, AudioChunkConverter, AudioStop
 from wyoming.event import Event
 from wyoming.info import Describe, Info
@@ -37,6 +37,7 @@ class GoogleEventHandler(AsyncEventHandler):
         self.google_info_event = wyoming_info.event()
         self.rate = 16000
         self.interimResults =  self.cli_args.intermediate_results
+        self.sendPartials: bool = False
         # setup for speech reco
         self.speechclient:object=None
         self.speechconfig:object= None
@@ -151,7 +152,7 @@ class GoogleEventHandler(AsyncEventHandler):
 
         if AudioChunk.is_type(event.type):
             if self.speechclient == None:
-                await self.handle_event(Transcribe().event())
+                await self.handle_event(xTranscribe(sendPartials=self.sendPartials).event())
             _LOGGER.debug("received AudioChunk event request")
             chunk = AudioChunk.from_event(event)
             _LOGGER.debug("chunk info rate="+str(chunk.rate)+" width="+str(chunk.width)+" channels="+str(chunk.channels))
@@ -162,7 +163,7 @@ class GoogleEventHandler(AsyncEventHandler):
             self.audio += chunk.audio 
 
             _LOGGER.debug("audio length="+str(len(self.audio)))
-            if self.interimResults == True:
+            if self.interimResults == True and self.sendPartials == True:
                 #if len(self.audio) > self.rate:
                 requests = [speech.StreamingRecognizeRequest(audio_content=self.audio)]
                 # add this content onto the last
@@ -207,14 +208,17 @@ class GoogleEventHandler(AsyncEventHandler):
 
             return True        
 
-        elif Transcribe.is_type(event.type):
+        elif xTranscribe.is_type(event.type):
             _LOGGER.debug("received Transcribe event request")
-            transcribe = Transcribe.from_event(event)
+            transcribe = xTranscribe.from_event(event)
             _LOGGER.debug("received transcribe from event successful")
             if transcribe.language:
                 self.language = transcribe.language
                 _LOGGER.debug("Language set to %s", transcribe.language)
-            self.text=''                
+            if transcribe.sendPartials == True:                
+                self.sendPartials = True
+            self.text=''    
+            self.audio = bytes()                        
             #setup to transcribe
             self.speechclient = speech.SpeechClient()
             self.speechconfig = speech.RecognitionConfig(
@@ -227,6 +231,7 @@ class GoogleEventHandler(AsyncEventHandler):
                 config=self.speechconfig, interim_results=self.interimResults
             )
             speech.StreamingRecognizeRequest(streaming_config=self.streaming_config)
+
             _LOGGER.debug("Completed Transcribe request\n")
             return True
         elif xTranscript.is_type(event.type):
