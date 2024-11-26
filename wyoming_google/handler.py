@@ -4,11 +4,12 @@ import asyncio
 import logging
 import re
 import sys
-from queue import LifoQueue
+from queue import Queue
 from threading import Thread
 
 from google.cloud import speech
-from wyoming.asr import Transcribe, Transcript
+from wyoming.asr import Transcribe
+from .xasr import xTranscript
 from wyoming.audio import AudioChunk, AudioChunkConverter, AudioStop
 from wyoming.event import Event
 from wyoming.info import Describe, Info
@@ -50,7 +51,7 @@ class GoogleEventHandler(AsyncEventHandler):
         self.debug: bool = self.cli_args.debug
         self.language = self.cli_args.language
         self.audio=bytes()
-        self.responseQueue = LifoQueue()
+        self.responseQueue = Queue()
         _thread = Thread(target=self.sendResponses)
         _thread.start()
     
@@ -171,19 +172,41 @@ class GoogleEventHandler(AsyncEventHandler):
             
                 # Now, put the transcription responses to use.
                 self.text=self.listen_print_loop(responses, self.interimResults, self.debug)       
-                self.saveOnQueue(Transcript(text=''.join(self.text)).event())
+                if len(self.text) >0:
+                    self.saveOnQueue(xTranscript(text=''.join(self.text),is_final=False).event())
                 #if len(self.text) >0:
                 #    self.text=''
                 #    self.audio=bytes()
                     #await self.write_event(Transcript(text=self.text).event())     
             _LOGGER.debug("Completed AudioChunk request\n")
             return True
-        elif Describe.is_type(event.type):
-            _LOGGER.debug("received Describe event request")
-            self.saveOnQueue(self.google_info_event)
-            #await self.write_event(self.google_info_event)
-            _LOGGER.debug("Sent Describe info\n")
-            return True
+        
+        elif AudioStop.is_type(event.type):
+            _LOGGER.debug("received AudioStop event request")
+            if self.speechclient==None:
+                _LOGGER.debug("speech vars=null=True")
+                #self.speechclient=speech.SpeechClient()
+            else:
+                _LOGGER.debug("speech vars=null=False")
+
+            _LOGGER.debug("audio length="+str(len(self.audio)))
+            #if len(self.audio) > self.rate:
+            requests = [speech.StreamingRecognizeRequest(audio_content=self.audio)]
+            # add this content onto the last
+            responses = self.speechclient.streaming_recognize(
+                self.streaming_config, requests
+            )
+        
+            # Now, put the transcription responses to use.
+            self.text=self.listen_print_loop(responses, self.interimResults, self.debug)      
+
+            _LOGGER.debug("recognized text="+self.text)
+            self.saveOnQueue(xTranscript(text=''.join(self.text),is_final=True).event())
+            #await self.write_event(Transcript(text=self.text).event())
+            _LOGGER.debug("Completed AudioStop request\n")
+
+            return True        
+
         elif Transcribe.is_type(event.type):
             _LOGGER.debug("received Transcribe event request")
             transcribe = Transcribe.from_event(event)
@@ -206,41 +229,21 @@ class GoogleEventHandler(AsyncEventHandler):
             speech.StreamingRecognizeRequest(streaming_config=self.streaming_config)
             _LOGGER.debug("Completed Transcribe request\n")
             return True
-        elif AudioStop.is_type(event.type):
-            _LOGGER.debug("received AudioStop event request")
-            if self.speechclient==None:
-                _LOGGER.debug("speech vars=null=True")
-                #self.speechclient=speech.SpeechClient()
-            else:
-                _LOGGER.debug("speech vars=null=False")
-
-            _LOGGER.debug("audio length="+str(len(self.audio)))
-            #if len(self.audio) > self.rate:
-            requests = [speech.StreamingRecognizeRequest(audio_content=self.audio)]
-            # add this content onto the last
-            responses = self.speechclient.streaming_recognize(
-                self.streaming_config, requests
-            )
-        
-            # Now, put the transcription responses to use.
-            self.text=self.listen_print_loop(responses, self.interimResults, self.debug)      
-
-            _LOGGER.debug("recognized text="+self.text)
-            self.saveOnQueue(Transcript(text=''.join(self.text)).event())
-            #await self.write_event(Transcript(text=self.text).event())
-            _LOGGER.debug("Completed AudioStop request\n")
-
-            return True
-        
-        elif Transcript.is_type(event.type):
+        elif xTranscript.is_type(event.type):
             _LOGGER.debug("Transcript received")
 
             #self.saveOnQueue(text=self.text)
-            self.saveOnQueue(Transcript(text=''.join(self.text)).event())
+            self.saveOnQueue(xTranscript(text=''.join(self.text), is_final=True).event())
             #await self.write_event(Transcript(text=self.text).event())
             _LOGGER.debug("Completed Transcript request\n")
-            return False
-                    
+            return False        
+        
+        elif Describe.is_type(event.type):
+            _LOGGER.debug("received Describe event request")
+            self.saveOnQueue(self.google_info_event)
+            #await self.write_event(self.google_info_event)
+            _LOGGER.debug("Sent Describe info\n")
+            return True                    
         
         _LOGGER.debug("unknown event="+event.type)
 
