@@ -2,6 +2,10 @@
 ## wyoming protocol handler for google streaming speech to text
 ##
 
+## 1.0.3
+
+- change processing to separate thread with async callbacks. 
+
 ## 1.0.2
 
 - add support for partial results with custom xTranscript event

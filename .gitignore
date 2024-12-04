@@ -19,3 +19,5 @@ __pycache__/
 
 /dist/
 
+*.wav
+somefile.txt

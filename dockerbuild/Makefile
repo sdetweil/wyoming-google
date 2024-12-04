@@ -2,8 +2,7 @@
 
 VERSION := 1.0.0
 TAG := rhasspy/wyoming-google
-PLATFORMS := linux/amd64,linux/arm64
-#,linux/armv7
+PLATFORMS := linux/amd64,linux/arm64,linux/armv7
 DATA_DIR := ${HOME}/wyoming-google/config
 MODEL_LANG := en
 HOST := 0.0.0.0

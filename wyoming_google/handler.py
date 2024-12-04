@@ -6,6 +6,7 @@ import re
 import sys
 from queue import Queue
 from threading import Thread
+from .transcoder import Transcoder
 
 from google.cloud import speech
 #from wyoming.asr import Transcribe
@@ -36,13 +37,10 @@ class GoogleEventHandler(AsyncEventHandler):
         self.cli_args = cli_args
         self.google_info_event = wyoming_info.event()
         self.rate = 16000
-        self.interimResults =  self.cli_args.intermediate_results
+        self.interimResults =  self.cli_args.intermediate_results == True
         self.sendPartials: bool = False
-        # setup for speech reco
-        self.speechclient:object=None
-        self.speechconfig:object= None
-        self.streaming_config:object = None
         self.text:str = None
+        self.transcoder : Transcoder = None
         self.audio_converter = AudioChunkConverter(
             rate=self.rate,
             width=2,
@@ -58,7 +56,13 @@ class GoogleEventHandler(AsyncEventHandler):
         _thread = Thread(target=self.sendResponses)
         _thread.start()
         self._is_final_sent:bool = False
+
+        _LOGGER.debug("interimResults="+str(self.interimResults))
             
+    def transcript_handler(self, text:str, final:bool)-> None:
+        _LOGGER.debug("send transcript, text='%s' final=%r", text, final)  
+        self.text=text                  
+        self.saveOnQueue(xTranscript(text=''.join(self.text),is_final=final).event())
 
     def listen_print_loop(self, responses: object, partial: bool, debug: bool) -> str:
         """Iterates through server responses and prints them.
@@ -156,7 +160,7 @@ class GoogleEventHandler(AsyncEventHandler):
 
     async def handle_event(self, event: Event) -> bool:
 
-        _LOGGER.debug("event type='"+event.type+"'\n")
+        #_LOGGER.debug("event type='"+event.type+"'\n")
 
         if AudioChunk.is_type(event.type):
             if self.connected is False:
@@ -164,119 +168,78 @@ class GoogleEventHandler(AsyncEventHandler):
                 return True
             if self._is_final_sent == True:
                 return True
-            if self.speechclient == None:
-                await self.handle_event(xTranscribe(sendPartials=self.sendPartials).event())
             _LOGGER.debug("received AudioChunk event request")
             chunk = AudioChunk.from_event(event)
             _LOGGER.debug("chunk info rate="+str(chunk.rate)+" width="+str(chunk.width)+" channels="+str(chunk.channels))
             _LOGGER.debug("expected info rate="+str(self.rate)+" width=2 channels=1")
             chunk = self.audio_converter.convert(chunk)
-            _LOGGER.debug("chunk audio length="+str(len(chunk.audio)))
 
-            self.audio += chunk.audio 
-
-            _LOGGER.debug("audio length="+str(len(self.audio)))
+            _LOGGER.debug("audio length=%d",len(chunk.audio))
             if self.interimResults == True and self.sendPartials == True:
-                _LOGGER.debug("processing for interim results")
-                #if len(self.audio) > self.rate:
-                requests = [speech.StreamingRecognizeRequest(audio_content=self.audio)]
-                # add this content onto the last
-                responses = self.speechclient.streaming_recognize(
-                    self.streaming_config, requests
-                )
-                now_text = ""
-                for response in responses:
-                    if response is not None and response.results[0].alternatives[0] is not None:
-                        if response.error is not True:
-                            now_text= response.results[0].alternatives[0].transcript
-                            self.final = False
-                            if response.results[0].is_final is True:                                
-                                self.final = True
-                    #break;            
+                _LOGGER.debug("sending chunk to transcoder")
+                self.transcoder.write(chunk.audio)
+                _LOGGER.debug("Completed AudioChunk request buffer size= %d \n", len(chunk.audio))
+            else:
+                _LOGGER.debug("appending data size=%d", len(chunk.audio))
+                self.audio+=chunk.audio
+                _LOGGER.debug("appended  data size=%d", len(self.audio))
+                _LOGGER.debug("Completed AudioChunk request buffer size= %d \n", len(self.audio))
 
-            
-                # Now, put the transcription responses to use.
-                #now_text=self.listen_print_loop(responses, self.interimResults, self.debug)
-                if len(now_text) != 0:
-                    _LOGGER.debug("text discovered=%s",now_text)
-                    if self.text != now_text:
-                        self.text = now_text
-                        if self._is_final_sent == False:
-                            _LOGGER.debug("send transcript, text='%s' final=%r", self.text, self.final)                    
-                            self.saveOnQueue(xTranscript(text=''.join(self.text),is_final=self.final).event())
-                            #if self.final is True:
-                            #    self._is_final_sent = True    
-                    '''
-                    else:
-                        if self.final:    
-                            _LOGGER.debug("text was the same and is_final")
-                            if self._is_final_sent == False:
-                                _LOGGER.debug("send transcript, text='%s' final=%r", self.text, self.final)                    
-                                self.saveOnQueue(xTranscript(text=''.join(self.text),is_final=self.final).event())                                                               
-                    '''            
-
-            _LOGGER.debug("Completed AudioChunk request\n")
+           
             return True
         
         elif AudioStop.is_type(event.type):
             _LOGGER.debug("received AudioStop event request")
-            if self.speechclient==None:
-                _LOGGER.debug("speech vars=null=True")
-                #self.speechclient=speech.SpeechClient()
-            else:
-                _LOGGER.debug("speech vars=null=False")
 
-            _LOGGER.debug("audio length="+str(len(self.audio)))
-            #if len(self.audio) > self.rate:
-            requests = [speech.StreamingRecognizeRequest(audio_content=self.audio)]
-            # add this content onto the last
-            responses = self.speechclient.streaming_recognize(
-                self.streaming_config, requests
-            )
-        
-            # Now, put the transcription responses to use.
-            self.text=self.listen_print_loop(responses, self.interimResults, self.debug)      
+            #if self.interimResults == False or self.sendPartials == False:
+            if len(self.audio) >0:
+                _LOGGER.debug("sending all data to transcoder, len=%d", len(self.audio))
+                self.transcoder.write(self.audio)
+                _LOGGER.debug("audio stop, check for transformer running")
+            if len(self.text) >0:
+                self.saveOnQueue(xTranscript(text=''.join(self.text), is_final=True).event())
 
-            _LOGGER.debug("recognized text="+self.text)
-            self.saveOnQueue(xTranscript(text=''.join(self.text),is_final=True).event())
-            self._is_final_sent = True
-            #await self.write_event(Transcript(text=self.text).event())
             _LOGGER.debug("Completed AudioStop request\n")
-
+            self.transcoder.stop()       
+            self.connected = False     
             return True        
 
         elif xTranscribe.is_type(event.type):
-            self.connected = True
-            _LOGGER.debug("received Transcribe event request")
-            transcribe = xTranscribe.from_event(event)
-            _LOGGER.debug("received transcribe from event successful")
-            if transcribe.language:
-                self.language = transcribe.language
-                _LOGGER.debug("Language set to %s", transcribe.language)
-            if 'sendPartials' in event.data and transcribe.sendPartials == True:                
-                self.sendPartials = True
-            self._is_final_sent = False;                
-            self.text=''    
-            self.audio = bytes()    
-            self.final= False                    
-            #setup to transcribe
-            self.speechclient = speech.SpeechClient()
-            self.speechconfig = speech.RecognitionConfig(
-                encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-                sample_rate_hertz=self.rate,
-                language_code=self.language,
-            )
+            if self.connected == False:
+                self.connected = True
+                #_LOGGER.debug("received Transcribe event request")
+                transcribe = xTranscribe.from_event(event)
+                _LOGGER.debug("received transcribe from event successful")
+                if transcribe.language:
+                    self.language = transcribe.language
+                    _LOGGER.debug("Language set to %s", transcribe.language)
+                if self.interimResults is True and transcribe.sendPartials == True:                
+                    self.sendPartials = True
+                else:    
+                    self.sendPartials = False
+                self._is_final_sent = False;        
+                self.data=None        
+                self.text=''    
+                self.audio = bytes()    
+                self.final= False          
 
-            self.streaming_config = speech.StreamingRecognitionConfig(
-                config=self.speechconfig, interim_results=self.interimResults,  single_utterance= True
-            )
-            speech.StreamingRecognizeRequest(streaming_config=self.streaming_config, )
+                if self.transcoder is None:   
+                    _LOGGER.debug("starting transcoder")       
+                    self.transcoder = Transcoder(
+                        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                        language=self.language,
+                        rate=self.rate,                
+                        partials=self.sendPartials
+                    )
+                    self.transcoder.start(self.transcript_handler)                    
+                else:
+                    _LOGGER.debug("transcoder already running")
+                    self.transcoder.restart(self.transcript_handler); 
 
-            _LOGGER.debug("Completed Transcribe request\n")
+                _LOGGER.debug("Completed Transcribe request\n")
             return True
         elif xTranscript.is_type(event.type):
             _LOGGER.debug("Transcript received")
-
             #self.saveOnQueue(text=self.text)
             self.saveOnQueue(xTranscript(text=''.join(self.text), is_final=True).event())
             #await self.write_event(Transcript(text=self.text).event())

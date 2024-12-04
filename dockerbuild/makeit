@@ -2,7 +2,7 @@
 
 script_dir=$(dirname $(readlink -f $0))
 
-latest_version=$(grep -m1  '^[##;]*[[:space:]]*[0-9]' CHANGELOG.md | awk '{print $2}')
+latest_version=$(grep -m1  '^[##;]*[[:space:]]*[0-9]' ../CHANGELOG.md | awk '{print $2}')
 
 if  [ $script_dir != $(pwd) ]; then 
 	cd  $script_dir
@@ -12,7 +12,7 @@ echo building version $latest_version
 cp run.sh $script_dir
 docker buildx build -t rhasspy/wyoming-google:$latest_version --platform linux/amd64 -f dockerbuild/Dockerfile . --load
 
-docker buildx build -t rhasspy/wyoming-google:$latest_version --platform linux/armv7 -f dockerbuild/Dockerfile .
+docker buildx build -t rhasspy/wyoming-google:$latest_version --platform linux/arm/v7 -f dockerbuild/Dockerfile .
 
 docker buildx build -t rhasspy/wyoming-google:$latest_version --platform linux/arm64 -f dockerbuild/Dockerfile .
 

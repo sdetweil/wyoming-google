@@ -23,7 +23,7 @@ async def main() -> None:
         help="Default language to set for transcription",
     )    
     parser.add_argument("--config", help="config folder name", default="/config") 
-    parser.add_argument("--intermediate_results", action="store_true",  help="if you want results on the fly") 
+    parser.add_argument("--intermediate_results", action="store_true", default=False, help="if you want results on the fly") 
     parser.add_argument("--debug", action="store_true", help="Log DEBUG messages")
     args = parser.parse_args()
 
@@ -34,6 +34,8 @@ async def main() -> None:
     if args.language == "auto":
         # google does not understand "auto"
         args.language = "en"
+
+    _LOGGER.debug("partials results="+str(args.intermediate_results))
 
     if os.path.isfile(args.config+CREDENTIALS_FILE) == False:
         raise FileNotFoundError
@@ -72,14 +74,14 @@ async def main() -> None:
 
     server = AsyncServer.from_uri(args.uri)
     _LOGGER.debug(wyoming_info)
-    model_lock = asyncio.Lock()
+    #model_lock = asyncio.Lock()
     await server.run(        
         partial(
             GoogleEventHandler,
             wyoming_info,
             args,
             0,
-            model_lock
+            0
         )
     )
     _LOGGER("exiting")
