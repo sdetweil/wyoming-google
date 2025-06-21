@@ -1,7 +1,7 @@
 .PHONY: local run update
 
-VERSION := 1.0.0
-TAG := rhasspy/wyoming-google
+VERSION := 1.0.1 
+TAG := wyoming-google
 PLATFORMS := linux/amd64,linux/arm64
 #,linux/armv7
 DATA_DIR := ${HOME}/wyoming-google/config

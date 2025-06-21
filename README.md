@@ -40,7 +40,7 @@ test/run_test_server
 
 run a test recognize, using two pre-recorded wav files
 ```sh
-test/wave2text.sh
+test/run_client_wave2text.sh  server_address (default localhost, same machine as server)
 ```
 
 this should produce this output from the 2 separate wav files
@@ -60,18 +60,22 @@ dockerbuild/makeit
 this will build 3 images<br>
 * AMD64 <br>
 * ARM64/aarch64 <br>
-* arm32 (arm7l)<br>
 
 to run the docker image for this platform, do 
 
-``` sh
-docker run -it -p 10555:10555 -v /path_to_credentials_folder:/config rhasspy/wyoming-google 
+``` sh 
+docker run -it -p 10555:10555 -v /path_to_credentials_folder:/config wyoming-google
 ```
 
 or 
 ```
 make -F dockerbuild/Makefile  run
 ```
+if on mac, lowercase f 
+```
+make -f dockerbuild/Makefile  run
+```
+
 
 [Source]
 this Wyoming extension is hosted at 
