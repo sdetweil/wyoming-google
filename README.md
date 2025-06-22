@@ -79,7 +79,12 @@ make -f dockerbuild/Makefile  run
 
 [Source]
 this Wyoming extension is hosted at 
-https://github/com/sdetweil/wyoming-goole
+https://github/com/sdetweil/wyoming-google
+
+
+## to add this engine to the Home Assistant Assist panel, 
+   use the settings/Integrations/Wyoming Protocol/add service 
+   ####     note: you cannot edit services, only recreate them
 
 ## creating the Google api Credentials file
 open the [Cloud Console](https://console.cloud.google.com/welcome)
