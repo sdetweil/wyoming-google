@@ -104,7 +104,8 @@ class Transcoder(object):
         audio_generator = self.stream_generator()
         requests = (speech.StreamingRecognizeRequest(audio_content=content)
                     for content in audio_generator)
-        _LOGGER.debug("processing for partial results")
+        #_LOGGER.debug("processing for partial results ="+str(partials))
+
         responses = client.streaming_recognize(streaming_config, requests)
         try:
             self.response_loop(responses, handler,  self.partials)
@@ -130,7 +131,7 @@ class Transcoder(object):
         _LOGGER.debug("process started")
         handler=args[0]
         partials=args[1]
-        _LOGGER.debug("send partial results="+str(partials))
+        #_LOGGER.debug("send partial results="+str(partials))
         streaming_config = speech.StreamingRecognitionConfig(
             config=config,
             interim_results=partials,

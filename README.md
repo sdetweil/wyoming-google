@@ -2,12 +2,13 @@
 
 [Wyoming protocol](https://github.com/rhasspy/wyoming) server for the [google-streaming](https://github.com/sdetweil/google-asr) speech to text system.
 
-## Home Assistant Add-on
+<!-- # Home Assistant Add-on
 
-[![Show add-on](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_google)
+![Show add-on](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_google)
 
-# not yet (Jan 19, 2024)
+not yet (Jan 19, 2024)
 [Source](https://github.com/home-assistant/addons/tree/master/google)
+-->
 
 ## Local Install
 
@@ -40,7 +41,7 @@ test/run_test_server
 
 run a test recognize, using two pre-recorded wav files
 ```sh
-test/wave2text.sh
+test/run_client_wave2text.sh  server_address (default localhost, same machine as server)
 ```
 
 this should produce this output from the 2 separate wav files
@@ -57,25 +58,50 @@ to create a local docker image for testing do
 ```
 dockerbuild/makeit
 ```
-this will build 3 images<br>
+this will build 2 images<br>
 * AMD64 <br>
 * ARM64/aarch64 <br>
-* arm32 (arm7l)<br>
 
 to run the docker image for this platform, do 
+```sh
+docker image save wyoming-google
 
-``` sh
-docker run -it -p 10555:10555 -v /path_to_credentials_folder:/config rhasspy/wyoming-google 
+
+``` sh 
+docker run -it -p 10555:10555 -v /path_to_credentials_folder:/config wyoming-google
 ```
 
 or 
 ```
 make -F dockerbuild/Makefile  run
 ```
+if on mac, lowercase f 
+```
+make -f dockerbuild/Makefile  run
+```
+
+
+# to move this image to another system  do 
+```sh
+docker image save wyoming-google -o whateverfilename.tar 
+```
+copy the tar file to the other system and do 
+```sh
+docker image load whateverfilename.tar
+```
 
 [Source]
-this Wyoming extension is hosted at 
-https://github/com/sdetweil/wyoming-goole
+# this Wyoming extension is hosted at 
+https://github/com/sdetweil/wyoming-google
+
+
+## after starting aninstance, with docker or scripted, to add this engine to the Home Assistant Assist panel, do
+   ## use the settings/Integrations/Wyoming Protocol/
+   ![add service](./images/ha_wyoming.png)
+
+   ### use the host and port (default 10555) on the system you started the instance on. note if using docker, you must use the docker host ip address. 
+
+   ####     note: you cannot edit services, only recreate them
 
 ## creating the Google api Credentials file
 open the [Cloud Console](https://console.cloud.google.com/welcome)
