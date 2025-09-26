@@ -136,10 +136,10 @@ click **ENABLE**
 ![main page](./images/after-api-enable.png)
 
 Create a new service account, 
-click **IAM and Services** in the hamburger menu next to Google CLoud<br>
+click **IAM and Services** in the hamburger menu next to Google Cloud<br>
 click **Service Accounts**<br>
 ![main page](./images/create-service-account.png)
-click **Create service accounnt**
+click **Create service account**
 enter a service account name that will be memorable for you <br>
 and description if you want<br>
 click **DONE**
