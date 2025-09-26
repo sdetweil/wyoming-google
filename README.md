@@ -95,7 +95,7 @@ docker image load whateverfilename.tar
 https://github/com/sdetweil/wyoming-google
 
 
-## after starting aninstance, with docker or scripted, to add this engine to the Home Assistant Assist panel, do
+## after starting an instance, with docker or scripted, to add this engine to the Home Assistant Assist panel, do
    ## use the settings/Integrations/Wyoming Protocol/
    ![add service](./images/ha_wyoming.png)
 
