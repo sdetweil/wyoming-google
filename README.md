@@ -64,10 +64,6 @@ this will build 2 images<br>
 
 to run the docker image for this platform, do 
 ```sh
-docker image save wyoming-google
-
-
-``` sh 
 docker run -it -p 10555:10555 -v /path_to_credentials_folder:/config wyoming-google
 ```
 
